@@ -1,11 +1,12 @@
 import { createContext, useContext } from "react";
 
 type UserDetail = {
-  _id: string;
-  email: string;
+  _id?: string;
+  email?: string;
   imageUrl: string;
   name: string;
-  _creationTime: number;
+  _creationTime?: number;
+  subscription?: string;
 } | null;
 
 export type UserContextType = {

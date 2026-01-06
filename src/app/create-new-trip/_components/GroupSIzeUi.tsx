@@ -1,4 +1,3 @@
-import { div } from 'motion/react-client';
 import React from 'react'
 
 export const SelectTravelersList = [
@@ -31,7 +30,11 @@ export const SelectTravelersList = [
     people: '5 to 10 People'
   }
 ];
-export default function GroupSizeUi({ onSelectOption }: any) {
+interface GroupSizeUiProps {
+  onSelectOption: (value: string) => void;
+}
+
+export default function GroupSizeUi({ onSelectOption }: GroupSizeUiProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {SelectTravelersList.map((item) => (

@@ -6,6 +6,16 @@ import { api } from "../../convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { UserDetailContext } from "./Context/UserDetailContext";
 import { TripDetailContext } from "./Context/TripDetailContext";
+import { TripInfo } from "./types";
+
+type UserDetail = {
+  _id?: string;
+  email?: string;
+  imageUrl: string;
+  name: string;
+  _creationTime?: number;
+  subscription?: string;
+} | null;
 
 /* ---------------- PROVIDER COMPONENT ---------------- */
 export default function Provider({
@@ -14,8 +24,8 @@ export default function Provider({
   children: React.ReactNode;
 }) {
   const createUserMutation = useMutation(api.user.CreateNewUser);
-  const [userDetail, setUserDetail] = useState<any>(null);
-  const [tripDetailInfo, setTripDetailInfo] = useState<any>(null);
+  const [userDetail, setUserDetail] = useState<UserDetail>(null);
+  const [tripDetailInfo, setTripDetailInfo] = useState<TripInfo | null>(null);
   const [isCreatingUser, setIsCreatingUser] = useState(false);
   const { user, isLoaded } = useUser();
 

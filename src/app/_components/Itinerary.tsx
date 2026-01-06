@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Timeline } from "@/components/ui/timeline";
 import { useTripDetail } from "../provider";
-import { TripInfo } from "../create-new-trip/_components/ChatBot";
+import { TripInfo, HotelType, DayItineraryType } from "../types";
 
 // const TRIP_DATA = {
 //   destination: "New York, USA",
@@ -353,20 +353,7 @@ import { TripInfo } from "../create-new-trip/_components/ChatBot";
 //     },
 //   ],
 // };
-interface HotelType {
-  name: string;
-  location: string;
-}
 
-interface ActivityType {
-  name: string;
-  time: string;
-}
-
-interface DayType {
-  day: string;
-  activities: ActivityType[];
-}
 export default function Itinerary() {
   
   const {tripDetailInfo,setTripDetailInfo}=useTripDetail()
@@ -379,7 +366,7 @@ export default function Itinerary() {
       title: "Recommended Hotels",
       content: (
         <div className="space-y-6">
-          {tripdata?.hotels.map((hotel:HotelType, idx) => (
+          {tripdata?.hotels?.map((hotel:HotelType, idx) => (
             <div
               key={idx}
               className="p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-sm hover:shadow-md transition-all"
@@ -406,7 +393,7 @@ export default function Itinerary() {
         </div>
       ),
     },
-    ...tripdata?.itinerary.map((day) => ({
+    ...(tripdata?.itinerary?.map((day) => ({
       title: `Day ${day.day} – ${day.day_plan}`,
       content: (
         <div className="space-y-6">
@@ -437,7 +424,7 @@ export default function Itinerary() {
           ))}
         </div>
       ),
-    })),
+    })) || []),
   ] :[] ;
 
   return (

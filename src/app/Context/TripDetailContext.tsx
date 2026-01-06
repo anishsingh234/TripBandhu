@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react";
-import { TripInfo } from "../create-new-trip/_components/ChatBot";
+import { TripInfo } from "../types";
 
 export type TripContextType = {
   tripDetailInfo: TripInfo | null;

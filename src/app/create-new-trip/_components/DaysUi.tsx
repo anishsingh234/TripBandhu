@@ -22,7 +22,11 @@ export const SelectDaysOptions = [
   },
 ];
 
-export default function DaysUi({ onSelectOption }: any) {
+interface DaysUiProps {
+  onSelectOption: (value: string) => void;
+}
+
+export default function DaysUi({ onSelectOption }: DaysUiProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       {SelectDaysOptions.map((item) => (
