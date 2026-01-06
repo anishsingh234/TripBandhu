@@ -1,8 +1,9 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader, Send } from "lucide-react";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import EmptyBoxState from "./EmptyBoxState";
 import GroupSIzeUi from "./GroupSIzeUi";
@@ -13,6 +14,7 @@ import { api } from "../../../../convex/_generated/api";
 import { useUserDetail } from "@/app/provider";
 import { v4 as uuidv4 } from "uuid";
 import { useTripDetail } from "@/app/provider";
+
 type Message = {
   role: string;
   content: string;
@@ -30,117 +32,96 @@ export type TripInfo = {
 };
 
 export default function ChatBot() {
-  const { userDetail, setUserDetail } = useUserDetail();
+  const { userDetail } = useUserDetail();
+  const { setTripDetailInfo } = useTripDetail();
+
   const [messages, setMessages] = useState<Message[]>([]);
-  const [userInput, setUserInput] = useState<string>("");
-  const [loading, setLoading] = useState<boolean>(false);
-  const [isFinal, setIsFinal] = useState<boolean>(false);
-  const [tripDetail, setTripDetail] = useState<TripInfo>();
+  const [userInput, setUserInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isFinal, setIsFinal] = useState(false);
+
   const SaveTripDetail = useMutation(api.tripDetail.CreateTripDetail);
-  //@ts-ignore
-  const { tripDetailInfo, setTripDetailInfo } = useTripDetail();
 
-  const onSend = async () => {
-    if (!userInput?.trim()) return;
-    setLoading(true);
+  /* ---------------- SEND MESSAGE ---------------- */
+  const onSend = async (input?: string) => {
+  const text = input ?? userInput;
+  if (!text.trim()) return;
 
-    const newMsg: Message = {
-      role: "user",
-      content: userInput,
-    };
+  setLoading(true);
 
-    setUserInput("");
-    setMessages((prev) => [...prev, newMsg]);
-
-    try {
-      const result = await axios.post("/api/aimodel", {
-        messages: [...messages, newMsg],
-        isFinal: isFinal,
-      });
-      console.log("Trip", result.data);
-
-      !isFinal &&
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: result?.data?.resp,
-            ui: result?.data?.ui,
-          },
-        ]);
-      if (isFinal) {
-        setTripDetail(result?.data?.trip_plan);
-        setTripDetailInfo(result?.data?.trip_plan);
-        const tripId = uuidv4();
-        await SaveTripDetail({
-          tripDetail: result?.data?.trip_plan,
-          tripId: tripId,
-          uid: userDetail?._id,
-        });
-      }
-      console.log(result.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+  const newMsg: Message = {
+    role: "user",
+    content: text,
   };
 
+  setUserInput("");
+
+  // ✅ Build messages ONCE
+  const updatedMessages = [...messages, newMsg];
+  setMessages(updatedMessages);
+
+  try {
+    const result = await axios.post("/api/aimodel", {
+      messages: updatedMessages,
+      isFinal,
+    });
+
+    const data = result.data;
+
+    if (!isFinal) {
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: data?.resp,
+          ui: data?.ui,
+        },
+      ]);
+    } else {
+      setTripDetailInfo(data?.trip_plan);
+
+      await SaveTripDetail({
+        tripDetail: data?.trip_plan,
+        tripId: uuidv4(),
+        uid: userDetail?._id,
+      });
+    }
+  } catch (err) {
+    console.error("Chat error:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  /* ---------------- RENDER DYNAMIC UI ---------------- */
   const RenderGenerativeUI = (ui: string) => {
-    if (ui == "budget") {
-      return (
-        <BudgetUi
-          onSelectOption={(v: string) => {
-            setUserInput(v);
-            onSend();
-          }}
-        />
-      );
-    } else if (ui === "groupSize") {
-      return (
-        <GroupSIzeUi
-          onSelectOption={(v: string) => {
-            setUserInput(v);
-            onSend();
-          }}
-        />
-      );
-    } else if (ui === "TripDuration") {
-      return (
-        <DaysUi
-          onSelectOption={(v: string) => {
-            setUserInput(v);
-            onSend();
-          }}
-        />
-      );
+    if (ui === "budget") {
+      return <BudgetUi onSelectOption={(v: string) => onSend(v)} />;
+    }
+    if (ui === "groupSize") {
+      return <GroupSIzeUi onSelectOption={(v: string) => onSend(v)} />;
+    }
+    if (ui === "TripDuration") {
+      return <DaysUi onSelectOption={(v: string) => onSend(v)} />;
     }
     return null;
   };
+
+  /* ---------------- FINAL STEP HANDLER ---------------- */
   useEffect(() => {
     const lastMsg = messages[messages.length - 1];
-    if (lastMsg?.ui == "Final") {
+    if (lastMsg?.ui === "Final" && !isFinal) {
       setIsFinal(true);
-      setUserInput("Ok Great..");
-      onSend();
+      onSend("Ok Great..");
     }
   }, [messages]);
 
-  useEffect(() => {
-    if (isFinal && userInput) {
-      onSend();
-    }
-  }, [isFinal]);
-
+  /* ---------------- UI ---------------- */
   return (
     <div className="h-[85vh] flex flex-col">
       {messages.length === 0 && (
-        <EmptyBoxState
-          onSelectOption={(v: string) => {
-            setUserInput(v);
-            onSend();
-          }}
-        />
+        <EmptyBoxState onSelectOption={(v: string) => onSend(v)} />
       )}
 
       <section className="flex-1 overflow-y-auto p-4">
@@ -175,13 +156,13 @@ export default function ChatBot() {
           <Textarea
             placeholder="Start typing from here..."
             className="w-full h-28 bg-transparent border-none focus-visible:ring-0 shadow-none resize-none"
-            onChange={(e) => setUserInput(e.target.value)}
             value={userInput}
+            onChange={(e) => setUserInput(e.target.value)}
           />
           <Button
             size="icon"
             className="absolute bottom-6 right-6"
-            onClick={onSend}
+            onClick={() => onSend()}
           >
             <Send className="h-4 w-4" />
           </Button>
