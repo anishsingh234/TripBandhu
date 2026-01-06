@@ -22,6 +22,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/contact-us/page.jsx", "src/app/pricing/page.jsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/app/contact-us/page.jsx", "src/app/pricing/page.jsx", "src/app/provider.tsx", "src/app/create-new-trip/_components/ChatBot.jsx"],
   "exclude": ["node_modules"]
 }
