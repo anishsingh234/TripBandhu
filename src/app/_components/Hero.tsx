@@ -47,7 +47,7 @@ export default function Hero() {
           <span className="text-primary">travel buddy!</span>
         </h1>
         <p className="text-lg text-muted-foreground">
-          Tell me what you want, and I'll handle the rest: Flights, Hotels, Trip
+          Tell me what you want, and I&apos;ll handle the rest: Flights, Hotels, Trip
           Planner – all in seconds.
         </p>
       </div>
