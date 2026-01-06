@@ -5,7 +5,7 @@ import {
   motion,
 } from "motion/react";
 import React, { useEffect, useRef, useState } from "react";
-import { TripInfo } from "@/app/create-new-trip/_components/ChatBot";
+import { TripInfo } from "@/app/types";
 import { Calendar, Wallet, Users } from "lucide-react";
 
 interface TimelineEntry {
