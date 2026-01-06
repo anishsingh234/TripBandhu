@@ -1,56 +1,75 @@
-import React, { useEffect, useState } from "react";
+"use client";
+
+import React, { useEffect, useState, useContext } from "react";
 import Header from "./_components/Header";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
-import { useContext } from "react";
 import { UserDetailContext } from "./Context/UserDetailContext";
-import { TripContextType, TripDetailContext } from "./Context/TripDetailContext";
-export default function Providerh({
+import { TripDetailContext } from "./Context/TripDetailContext";
+
+/* ---------------- PROVIDER COMPONENT ---------------- */
+
+export default function Provider({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
-  const CreateUser = useMutation(api.user.CreateNewUser);
-  const [userDetail, setUserDetail] = useState<any>();
-  const [tripDetailInfo,setTripDetailInfo]=useState<any>();
+}) {
+  const createUserMutation = useMutation(api.user.CreateNewUser);
+
+  const [userDetail, setUserDetail] = useState<any>(null);
+  const [tripDetailInfo, setTripDetailInfo] = useState<any>(null);
+
   const { user } = useUser();
+
   useEffect(() => {
-    user && CreateNewUser();
+    if (user) {
+      createNewUser();
+    }
   }, [user]);
-  const CreateNewUser = async () => {
-    const result = await CreateUser({
-      email: user?.primaryEmailAddress?.emailAddress ?? "",
-      imageUrl: user?.imageUrl ?? "",
-      name: user?.fullName ?? "",
-    });
-    setUserDetail(result);
+
+  const createNewUser = async () => {
+    if (!user) return;
+
+    try {
+      const result = await createUserMutation({
+        email: user.primaryEmailAddress?.emailAddress ?? "",
+        imageUrl: user.imageUrl ?? "",
+        name: user.fullName ?? "",
+      });
+
+      setUserDetail(result);
+    } catch (error) {
+      console.error("Failed to create user:", error);
+    }
   };
+
   return (
     <UserDetailContext.Provider value={{ userDetail, setUserDetail }}>
-      <TripDetailContext.Provider value={{tripDetailInfo,setTripDetailInfo}}>
-      <div>
+      <TripDetailContext.Provider
+        value={{ tripDetailInfo, setTripDetailInfo }}
+      >
         <Header />
         {children}
-      </div>
       </TripDetailContext.Provider>
     </UserDetailContext.Provider>
   );
 }
 
+/* ---------------- CUSTOM HOOKS ---------------- */
 
-export const useUserDetail=()=>{
-  return useContext(UserDetailContext);
-}
-
-
-
-
+export const useUserDetail = () => {
+  const context = useContext(UserDetailContext);
+  if (!context) {
+    throw new Error("useUserDetail must be used within Provider");
+  }
+  return context;
+};
 
 export const useTripDetail = () => {
   const context = useContext(TripDetailContext);
   if (!context) {
-    throw new Error("useTripDetail must be used within TripDetailProvider");
+    throw new Error("useTripDetail must be used within Provider");
   }
   return context;
 };
