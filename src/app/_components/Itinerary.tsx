@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Timeline } from "@/components/ui/timeline";
 import { useTripDetail } from "../provider";
-import { TripInfo, HotelType, DayItineraryType } from "../types";
+import { TripInfo, HotelType } from "../types";
 
 // const TRIP_DATA = {
 //   destination: "New York, USA",
@@ -356,12 +356,12 @@ import { TripInfo, HotelType, DayItineraryType } from "../types";
 
 export default function Itinerary() {
   
-  const {tripDetailInfo,setTripDetailInfo}=useTripDetail()
+  const {tripDetailInfo}=useTripDetail()
   const [tripdata,setTripData]=useState<TripInfo |null>(null);
   useEffect(()=>{
     tripDetailInfo && setTripData(tripDetailInfo)
   },[tripDetailInfo])
-  const data = tripdata ?[
+  const data = tripdata ? [
     {
       title: "Recommended Hotels",
       content: (

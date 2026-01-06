@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
 
     /* Build conversation text */
     const conversation = messages
-      .map((m: any) => `${m.role}: ${m.content}`)
+      .map((m: {role: string; content: string}) => `${m.role}: ${m.content}`)
       .join("\n");
 
     const prompt = `
@@ -113,12 +113,13 @@ ${conversation}
     const parsed = JSON.parse(cleanJson);
 
     return NextResponse.json(parsed);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     console.error("❌ API ERROR:", error);
     return NextResponse.json(
       {
         error: "AI failed to return valid JSON",
-        message: error?.message,
+        message: errorMessage,
       },
       { status: 500 }
     );

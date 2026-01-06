@@ -3,7 +3,7 @@ import HeroVideoDialog from "@/components/magicui/hero-video-dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useUser } from "@clerk/nextjs";
-import { Globe2, Send, MapPin, Users, BookOpenCheck, ArrowBigDown, ArrowDown } from "lucide-react";
+import { Globe2, Send, MapPin, Users, BookOpenCheck, ArrowDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
 
@@ -42,7 +42,7 @@ export default function Hero() {
       {/* Heading Section */}
       <div className="max-w-3xl w-full text-center space-y-6">
         <h1 className="text-2xl md:text-5xl font-bold leading-tight">
-          Hey, I'm your personal{" "}
+          Hey, I&apos;m your personal{" "}
           <span className="text-primary">Trip Bandhu</span> — your{" "}
           <span className="text-primary">travel buddy!</span>
         </h1>

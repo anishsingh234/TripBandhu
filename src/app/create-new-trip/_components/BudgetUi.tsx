@@ -22,7 +22,11 @@ export const SelectBudgetOptions = [
   },
 ];
 
-export default function BudgetUi({ onSelectOption }: any) {
+interface BudgetUiProps {
+  onSelectOption: (value: string) => void;
+}
+
+export default function BudgetUi({ onSelectOption }: BudgetUiProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       {SelectBudgetOptions.map((item) => (
