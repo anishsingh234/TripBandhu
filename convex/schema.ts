@@ -7,6 +7,10 @@ export default defineSchema({
         imageUrl:v.string(),
         email:v.optional(v.string()),
         subscription:v.optional(v.string()),
+        currentPlan:v.optional(v.string()),
+        planPrice:v.optional(v.number()),
+        billingCycle:v.optional(v.string()),
+        planSelectedAt:v.optional(v.string()),
     }),
     TripDetailTable:defineTable({
         tripId:v.string(),

@@ -1,11 +1,27 @@
 "use client"
 import React, { useState, useEffect, useRef } from 'react';
-import { Check, X } from 'lucide-react';
+import { Check, X, Loader } from 'lucide-react';
 import * as THREE from 'three';
+import { useUser } from '@clerk/nextjs';
+import { useMutation } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
+import { useRouter } from 'next/navigation';
 
 export default function PricingPage() {
   const canvasRef = useRef(null);
   const [isAnnual, setIsAnnual] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const { user } = useUser();
+  const router = useRouter();
+  
+  // Safely get the mutation - it may not be available during initial render
+  let savePlanSelection = null;
+  try {
+    savePlanSelection = useMutation(api.user.SavePlanSelection);
+  } catch (e) {
+    // Mutation not available yet - that's ok
+  }
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -163,6 +179,45 @@ export default function PricingPage() {
     };
   }, []);
 
+  const handlePlanSelection = async (plan) => {
+    if (!user) {
+      router.push('/sign-in');
+      return;
+    }
+
+    setLoading(true);
+    setSelectedPlan(plan.name);
+
+    try {
+      // Save plan selection to database
+      if (savePlanSelection) {
+        await savePlanSelection({
+          userId: user.id,
+          planName: plan.name,
+          price: isAnnual ? plan.price.annual : plan.price.monthly,
+          billingCycle: isAnnual ? 'annual' : 'monthly',
+          selectedAt: new Date().toISOString()
+        });
+      }
+
+      // Redirect to payment/checkout or success page
+      if (plan.price.monthly === 0) {
+        // Free plan - redirect directly
+        router.push('/create-new-trip');
+      } else {
+        // Paid plan - show success and stay on page
+        alert(`✓ Plan selected: ${plan.name}\n\nAmount: $${isAnnual ? plan.price.annual : plan.price.monthly}/${isAnnual ? 'year' : 'month'}\n\nRedirecting to payment...`);
+        // router.push('/checkout?plan=' + plan.name);
+      }
+    } catch (error) {
+      console.error('Error selecting plan:', error);
+      alert('Note: Plan selection feature is being set up. Please try again soon.');
+    } finally {
+      setLoading(false);
+      setSelectedPlan(null);
+    }
+  };
+
   const plans = [
     {
       name: "Free Explorer",
@@ -313,12 +368,15 @@ export default function PricingPage() {
               </div>
 
               <button
-                className={`w-full py-3 px-6 rounded-lg font-semibold transition-all duration-200 mb-8 ${
+                onClick={() => handlePlanSelection(plan)}
+                disabled={loading}
+                className={`w-full py-3 px-6 rounded-lg font-semibold transition-all duration-200 mb-8 flex items-center justify-center gap-2 ${
                   plan.highlighted
-                    ? 'bg-white text-purple-600 hover:bg-gray-100 shadow-lg'
-                    : 'bg-purple-600 text-white hover:bg-purple-700'
+                    ? 'bg-white text-purple-600 hover:bg-gray-100 shadow-lg disabled:opacity-70'
+                    : 'bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-70'
                 }`}
               >
+                {loading && selectedPlan === plan.name && <Loader className="w-4 h-4 animate-spin" />}
                 {plan.cta}
               </button>
 

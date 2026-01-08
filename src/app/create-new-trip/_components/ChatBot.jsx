@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader, Send } from "lucide-react";
+import { Send } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import EmptyBoxState from "./EmptyBoxState";
@@ -133,7 +133,11 @@ export default function ChatBot() {
         {loading && (
           <div className="flex justify-start mt-2">
             <div className="max-w-lg bg-gray-100 text-black px-4 py-2 rounded-lg">
-              <Loader className="animate-spin" />
+              <div className="flex flex-row gap-2">
+                <div className="w-4 h-4 rounded-full bg-purple-600 animate-bounce [animation-delay:.7s]"></div>
+                <div className="w-4 h-4 rounded-full bg-purple-600 animate-bounce [animation-delay:.3s]"></div>
+                <div className="w-4 h-4 rounded-full bg-purple-600 animate-bounce [animation-delay:.7s]"></div>
+              </div>
             </div>
           </div>
         )}

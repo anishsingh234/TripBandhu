@@ -38,9 +38,11 @@ Output format (STRICT JSON ONLY):
 `;
 
 const FINAL_PLAN_PROMPT = `
-All trip details are collected.
+All trip details are collected. Generate a concise but complete trip plan based on the conversation.
 
-Generate a complete, detailed trip plan.
+IMPORTANT: Keep it brief but informative:
+1. hotels - array of 2-3 recommended hotels with name, short description (1 line), price, and address
+2. itinerary - array of daily plans with day number, title, and 2-3 key activities with time and activity name only
 
 Output format (STRICT JSON ONLY):
 {
@@ -50,8 +52,27 @@ Output format (STRICT JSON ONLY):
     "origin": "string",
     "budget": "string",
     "group_size": "string",
-    "hotels": [],
-    "itinerary": []
+    "hotels": [
+      {
+        "name": "string",
+        "description": "string (1 line max)",
+        "price": "string",
+        "address": "string"
+      }
+    ],
+    "itinerary": [
+      {
+        "day": number,
+        "day_plan": "string",
+        "activities": [
+          {
+            "time": "string",
+            "place_name": "string",
+            "place_details": "string (1-2 lines)"
+          }
+        ]
+      }
+    ]
   }
 }
 `;
@@ -74,8 +95,9 @@ export async function POST(req: NextRequest) {
       model: "gemini-2.5-flash",
     });
 
-    /* Build conversation text */
-    const conversation = messages
+    /* Build conversation text - only keep last 10 messages to reduce context */
+    const recentMessages = messages.slice(-10);
+    const conversation = recentMessages
       .map((m: {role: string; content: string}) => `${m.role}: ${m.content}`)
       .join("\n");
 
@@ -94,8 +116,9 @@ ${conversation}
         },
       ],
       generationConfig: {
-        temperature: isFinal ? 0.2 : 0.6,
+        temperature: isFinal ? 0.3 : 0.6,
         responseMimeType: "application/json",
+        maxOutputTokens: isFinal ? 2000 : 500,
       },
     });
 
